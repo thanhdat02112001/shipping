@@ -1,0 +1,72 @@
+version: "3.7"
+services:
+  app:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    image: chat
+    container_name: chat-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./backend:/var/www
+    networks:
+      - chatapp
+  front:
+    image: node:18-alpine
+    container_name: chat-front
+    volumes:
+      - ./frontend:/front
+      - ./javascript-version:/js-version
+    command: tail -f /dev/null
+    networks:
+      - chatapp
+    ports:
+      - 8080:5173
+
+  mysql:
+    image: mysql:5.7
+    container_name: chat-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: chat
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: admin
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    networks:
+      - chatapp
+  pma:
+    image: phpmyadmin:5.1.1
+    container_name: chat-pma
+    restart: unless-stopped
+    environment:
+      PMA_HOSTS: mysql
+      PMA_PORT: 3306
+      PMA_USER: admin
+      PMA_PASSWORD: password
+      UPLOAD_LIMIT: 64M
+    depends_on:
+      - mysql
+    networks:
+      - chatapp
+    ports:
+      - 8181:80
+
+  nginx:
+    image: nginx:alpine
+    container_name: chat-nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ./backend:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d/
+      - ./docker/log:/var/log/nginx
+    networks:
+      - chatapp
+
+networks:
+  chatapp:
+    driver: bridge
