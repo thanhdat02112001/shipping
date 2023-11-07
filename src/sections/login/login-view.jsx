@@ -13,30 +13,35 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { alpha, useTheme } from '@mui/material/styles';
 import InputAdornment from '@mui/material/InputAdornment';
 
-import { useRouter } from 'src/routes/hooks';
+// import { useRouter } from 'src/routes/hooks';
 
 import { bgGradient } from 'src/theme/css';
 
 import Logo from 'src/components/logo';
-import Iconify from 'src/components/iconify';
+import Iconify from 'src/components/iconify'; 
+import { useAuth } from 'src/hooks/use-auth';
 
 // ----------------------------------------------------------------------
 
 export default function LoginView() {
   const theme = useTheme();
 
-  const router = useRouter();
+  // const router = useRouter();
+  const auth = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail]  = useState('');
+  const [password, setPassword] = useState('');
 
   const handleClick = () => {
-    router.push('/dashboard');
+    auth.login(email, password)
+    // router.push('/dashboard');
   };
 
   const renderForm = (
     <>
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
+        <TextField name="email" label="Email address" value={email} onChange={(e)=>setEmail(e.target.value)} />
 
         <TextField
           name="password"
@@ -51,6 +56,8 @@ export default function LoginView() {
               </InputAdornment>
             ),
           }}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
       </Stack>
 

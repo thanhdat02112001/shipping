@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -10,7 +10,6 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-import { users } from 'src/_mock/user';
 
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -21,6 +20,8 @@ import UserTableHead from '../user-table-head';
 import TableEmptyRows from '../table-empty-rows';
 import UserTableToolbar from '../user-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
+import { Link } from 'react-router-dom';
+import { HTTP } from 'src/helper/http-common';
 
 // ----------------------------------------------------------------------
 
@@ -36,6 +37,8 @@ export default function UserPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const [users, setUsers] = useState([]);
 
   const handleSort = (event, id) => {
     const isAsc = orderBy === id && order === 'asc';
@@ -93,15 +96,26 @@ export default function UserPage() {
   });
 
   const notFound = !dataFiltered.length && !!filterName;
+  
+  useEffect(() => {
+    HTTP.get('/user')
+    .then(response => {
+      const {data} = response
+      console.log(data.users)
+      setUsers(data.users)
+    })
+  }, [])
 
   return (
     <Container>
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
         <Typography variant="h4">Users</Typography>
 
-        <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
+        <Link to="/user/new">
+          <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}>
           New User
         </Button>
+        </Link>
       </Stack>
 
       <Card>
@@ -123,7 +137,6 @@ export default function UserPage() {
                 onSelectAllClick={handleSelectAllClick}
                 headLabel={[
                   { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
                   { id: 'role', label: 'Role' },
                   { id: 'isVerified', label: 'Verified', align: 'center' },
                   { id: 'status', label: 'Status' },
@@ -137,12 +150,11 @@ export default function UserPage() {
                     <UserTableRow
                       key={row.id}
                       name={row.name}
-                      role={row.role}
-                      status={row.status}
-                      company={row.company}
+                      role={row.role_id === 2 ? 'Admin' : 'Staff'}
+                      status={row.status === 1 ? "active" : "banned"}
                       avatarUrl={row.avatarUrl}
                       isVerified={row.isVerified}
-                      selected={selected.indexOf(row.name) !== -1}
+                      selected={selected.indexOf(row.name) !== -1}  
                       handleClick={(event) => handleClick(event, row.name)}
                     />
                   ))}
