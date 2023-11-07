@@ -20,7 +20,7 @@
         </VCardText>
 
         <VCardText>
-          <VForm @submit.prevent="() => {}">
+          <VForm @submit.prevent="handlerLogin">
             <VRow>
               <!-- email -->
               <VCol cols="12">
@@ -56,7 +56,6 @@
                 <VBtn
                   block
                   type="submit"
-                  to="/"
                 >
                   Login
                 </VBtn>
@@ -98,21 +97,36 @@
 </template>
 
 <script>
-import logo from '@/assets/logo.svg'
-import { ref } from 'vue';
+import {HTTP} from '../http-common'
 export default {
     name: "LoginView",
-    components: {
-        logo
+    data: () => {
+      return {
+        form: {
+          email: "",
+          password: "",
+          remember: false
+        },
+        isPasswordVisible: false
+      }
     },
-    setup: () => {
-        const form = ref({
-            email: "",
-            password: "",
-            remember: false,
+    methods: {
+      handlerLogin() {
+        HTTP.post('login', {
+          email: this.form.email,
+          password: this.form.password
         })
-        const isPasswordVisible = ref(false)
-        return {form, isPasswordVisible}
-    },
+        .then(response => {
+          let res = response.data
+          if (res.status_code == 200)
+          {
+            localStorage.setItem('token', res.access_token)
+            this.$router.push('/')
+          } else {
+            alert(res.message)
+          }
+        })
+      }
+    }
 }
 </script>

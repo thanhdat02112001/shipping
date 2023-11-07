@@ -16,8 +16,9 @@ services:
     image: node:18-alpine
     container_name: chat-front
     volumes:
-      - ./frontend:/front
-      - ./javascript-version:/js-version
+      # - ./frontend:/front
+      # - ./javascript-version:/js-version
+      - ./template-react:/react
     command: tail -f /dev/null
     networks:
       - chatapp
@@ -66,6 +67,16 @@ services:
       - ./docker/log:/var/log/nginx
     networks:
       - chatapp
+  
+  mailhog:
+    image: mailhog/mailhog
+    logging:
+      driver: 'none'
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      - chatapp 
 
 networks:
   chatapp:
